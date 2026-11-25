@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 空家サバイバル
 
-## Getting Started
+相続・放置で手元に残った空家（負動産）を管理しながら出口を探す、モバイル向けシミュレーションです。
 
-First, run the development server:
+## 起動
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 主な操作
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- 上部タイマーで年が進みます（倍速・一時停止・次へ・最初に戻る）
+- イベントは内容確認後に「どうする？」で決断
+- アクションで勉強・相談・解体見積もりなどができます
+- Tips は学習用の簡易表現です。実際の手続きは専門家・行政窓口へ
 
-## Learn More
+## データ
 
-To learn more about Next.js, take a look at the following resources:
+| ファイル | 内容 |
+|---------|------|
+| `src/data/tags.ts` | 初期ガチャ条件 |
+| `src/data/events.ts` | イベントプール |
+| `src/data/passiveEvents.ts` | 選択なしイベント |
+| `src/data/endings.ts` | エンディング |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## アイコン
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`public/icon-512.png`（512×512）
