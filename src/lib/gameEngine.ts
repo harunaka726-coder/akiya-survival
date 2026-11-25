@@ -2,6 +2,7 @@ import { ENDINGS } from "@/data/endings";
 import { EVENTS } from "@/data/events";
 import { PASSIVE_EVENTS } from "@/data/passiveEvents";
 import { BUILDING_TAGS } from "@/data/tags";
+import { SITE_URL } from "@/lib/site";
 import type {
   EndingId,
   EventCondition,
@@ -2127,6 +2128,23 @@ export function resolveChoice(
   return next;
 }
 
+function shareVacantLabel(state: GameState): string {
+  if (state.flags.sold || state.ownership === "sold") return "売却済み";
+  if (state.flags.demolished || state.ownership === "cleared") return "更地";
+  if (state.vacantLevel === "specified") return "特定空家等";
+  if (state.vacantLevel === "mismanaged") return "管理不全空家等";
+  return "空家等";
+}
+
+function shareAdminLabel(state: GameState): string {
+  if (state.flags.adminExecuted || state.flags.ignoredOrder) return "代執行";
+  if (state.adminStage >= 4) return "命令";
+  if (state.adminStage >= 3) return "勧告";
+  if (state.adminStage >= 2) return "指導";
+  if (state.adminStage >= 1) return "助言";
+  return "なし";
+}
+
 export function buildShareText(state: GameState): string {
   const ending = state.endingId ? ENDINGS[state.endingId] : null;
   const rank = ending?.rank ?? "BAD";
@@ -2135,6 +2153,9 @@ export function buildShareText(state: GameState): string {
     `『空家サバイバル』`,
     `${rank} END / ${title}`,
     `${state.year}年経過・累計支払約${Math.round(state.totalPaid)}万円`,
+    `空家の状況：${shareVacantLabel(state)}`,
+    `行政指導の段階：${shareAdminLabel(state)}`,
+    SITE_URL,
     `#空家サバイバル #実家ガチャ #空家対策 #負動産`,
   ].join("\n");
 }

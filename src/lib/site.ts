@@ -2,6 +2,9 @@
 
 export const APP_NAME = "空家サバイバル";
 
+/** 公開URL（Xシェア等） */
+export const SITE_URL = "https://akiyasurvival.harunakajima.com";
+
 /** PC版タイトル（スマホ版の表記は APP_NAME のまま） */
 export const DESKTOP_APP_TITLE = "空家サバイバル　～100日後に代執行される実家～";
 export const DESKTOP_APP_TITLE_MAIN = "空家サバイバル";
