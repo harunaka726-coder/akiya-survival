@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  COPYRIGHT,
   HOW_TO_PLAY_PATH,
   OTHER_WORKS_URL,
   PRIVACY_POLICY_URL,
@@ -10,13 +9,28 @@ import {
 } from "@/lib/site";
 import { AdSlot } from "@/components/AdSlot";
 
-export function SiteFooter({ showAd = false }: { showAd?: boolean }) {
+export function SiteFooter({
+  showAd = false,
+  desktop = false,
+}: {
+  showAd?: boolean;
+  /** PC：リンク文字を大きく */
+  desktop?: boolean;
+}) {
   const contact = contactUrlForLocale();
 
   return (
-    <footer className="shrink-0 border-t-2 border-ink bg-white px-2 py-2.5">
-      {showAd && <AdSlot className="mb-2.5" />}
-      <nav className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 text-[11px] font-bold leading-tight text-ink-soft">
+    <footer
+      className={`shrink-0 border-t-2 border-ink bg-white ${
+        desktop ? "px-4 py-3.5" : "px-2 py-2.5"
+      }`}
+    >
+      {showAd && <AdSlot className={desktop ? "mb-3" : "mb-2.5"} />}
+      <nav
+        className={`flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 font-bold leading-tight text-ink-soft ${
+          desktop ? "desktop-footer-nav gap-x-2" : "text-[11px]"
+        }`}
+      >
         <Link href={HOW_TO_PLAY_PATH} className="underline-offset-2 hover:underline">
           遊び方
         </Link>
@@ -47,8 +61,6 @@ export function SiteFooter({ showAd = false }: { showAd?: boolean }) {
         >
           他の作品
         </a>
-        <span className="text-muted">·</span>
-        <span className="font-semibold text-muted">{COPYRIGHT}</span>
       </nav>
     </footer>
   );

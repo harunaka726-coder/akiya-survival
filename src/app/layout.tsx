@@ -8,8 +8,11 @@ export const metadata: Metadata = {
     "実家ガチャと空家のサバイバル。負動産・相続・管理不全空家等・行政代執行を疑似体験するシミュレーション。",
   applicationName: APP_NAME,
   icons: {
-    icon: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
-    apple: [{ url: "/icon-512.png", sizes: "512x512", type: "image/png" }],
+    icon: [
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
 

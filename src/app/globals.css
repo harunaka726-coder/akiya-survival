@@ -127,3 +127,71 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
+
+/* PCブラウザ用ステージ */
+.desktop-stage {
+  background: #e2e8f0;
+}
+
+@media (min-width: 768px) {
+  .desktop-stage {
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 20%, rgba(15, 118, 110, 0.12), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 85% 80%, rgba(245, 158, 11, 0.14), transparent 50%),
+      linear-gradient(145deg, #e8eef5 0%, #f3efe6 45%, #dde5ef 100%);
+  }
+
+  .desktop-aside {
+    animation: card-in 0.35s ease-out both;
+  }
+
+  .phone-frame {
+    box-shadow:
+      8px 8px 0 0 rgba(15, 23, 42, 1),
+      0 24px 48px rgba(15, 23, 42, 0.12);
+  }
+
+  /* PC版のみ文字を一段大きく */
+  .desktop-ui {
+    font-size: 18px;
+  }
+  .desktop-ui .text-\[10px\] {
+    font-size: 13px !important;
+  }
+  .desktop-ui .text-\[11px\] {
+    font-size: 14px !important;
+  }
+  .desktop-ui .text-\[12px\] {
+    font-size: 15px !important;
+  }
+  .desktop-ui .text-\[13px\] {
+    font-size: 16px !important;
+  }
+  .desktop-ui .text-\[14px\] {
+    font-size: 17px !important;
+  }
+  .desktop-ui .text-\[15px\] {
+    font-size: 18px !important;
+  }
+  .desktop-ui .text-\[16px\] {
+    font-size: 19px !important;
+  }
+  .desktop-ui .text-\[17px\] {
+    font-size: 20px !important;
+  }
+  .desktop-ui .text-\[9px\],
+  .desktop-ui .text-\[8px\] {
+    font-size: 12px !important;
+  }
+  /* 行政フロー：チップ・矢印（等高・ややコンパクト） */
+  .desktop-ui .desktop-flow-chip {
+    font-size: 12px !important;
+  }
+  .desktop-ui .desktop-flow-arrow {
+    font-size: 16px !important;
+    line-height: 1 !important;
+  }
+  .desktop-ui .desktop-footer-nav {
+    font-size: 10px !important;
+  }
+}

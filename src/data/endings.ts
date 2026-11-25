@@ -49,6 +49,18 @@ export const ENDINGS: Record<EndingId, EndingDef> = {
     ],
     shareHook: "赤字でも手放せた。空家の負の連鎖を、ここで止めた。",
   },
+  renounce: {
+    id: "renounce",
+    title: "相続放棄——当事者から外れた",
+    rank: "NORMAL",
+    subtitle: "NORMAL END · 相続放棄",
+    body: [
+      "家庭裁判所に相続放棄を申述し、あなたは相続の当事者から外れた。",
+      "空家の固定資産税も管理責任も、原則としてあなたには向かなくなる。",
+      "ただし熟慮期間内であること、プラスの財産も手放すこと——その代償付きの出口だった。",
+    ],
+    shareHook: "相続放棄で空家の当事者から外れたNORMAL END。",
+  },
   true_end: {
     id: "true_end",
     title: "早期決断・地域循環",

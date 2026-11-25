@@ -2,6 +2,11 @@
 
 export const APP_NAME = "空家サバイバル";
 
+/** PC版タイトル（スマホ版の表記は APP_NAME のまま） */
+export const DESKTOP_APP_TITLE = "空家サバイバル　～100日後に代執行される実家～";
+export const DESKTOP_APP_TITLE_MAIN = "空家サバイバル";
+export const DESKTOP_APP_TITLE_SUB = "～100日後に代執行される実家～";
+
 export const CONTACT_FORM_JA = "https://forms.gle/vBsaTrXa6ZQGHrfT8";
 /** 日本語以外のときの問い合わせ先 */
 export const CONTACT_FORM_EN = "https://harunakajima.com/";

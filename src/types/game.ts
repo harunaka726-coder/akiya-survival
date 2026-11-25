@@ -45,6 +45,7 @@ export type EndingId =
   | "generational_curse"
   | "bankruptcy"
   | "tearful_exit"
+  | "renounce"
   | "true_end"
   | "neighbor_liability"
   | "land_giveup";

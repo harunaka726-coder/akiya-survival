@@ -21,6 +21,9 @@ import {
 import { ActionBar } from "@/components/ActionBar";
 import { AdminFlowStrip } from "@/components/AdminFlowStrip";
 import { ChoicePanel, useThinkingGate } from "@/components/ChoicePanel";
+import { DesktopHeader } from "@/components/DesktopHeader";
+import { DesktopIntroLayout } from "@/components/DesktopIntroLayout";
+import { DesktopPlayLayout } from "@/components/DesktopPlayLayout";
 import { ResultScreen } from "@/components/ResultScreen";
 import { SiteFooter } from "@/components/SiteFooter";
 import { StartScreen } from "@/components/StartScreen";
@@ -28,8 +31,10 @@ import { StatusBar } from "@/components/StatusBar";
 import { Timeline } from "@/components/Timeline";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { YearTimer } from "@/components/YearTimer";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 
 export function GameApp() {
+  const isDesktop = useIsDesktop();
   const [state, setState] = useState<GameState | null>(null);
   const [yearProgress, setYearProgress] = useState(0);
   const [choiceRemain, setChoiceRemain] = useState(CHOICE_DURATION_MS);
@@ -40,12 +45,10 @@ export function GameApp() {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  /** 現在の年に経過した実時間（ms）。pause / アクション中は増やさない */
   const yearElapsedRef = useRef(0);
   const yearLastTickRef = useRef<number | null>(null);
   const yearNumberRef = useRef(-1);
 
-  /** シンキングの経過（ms）。pause 中は増やさない */
   const choiceElapsedRef = useRef(0);
   const choiceLastTickRef = useRef<number | null>(null);
   const choicePendingIdRef = useRef<string | null>(null);
@@ -81,7 +84,6 @@ export function GameApp() {
   }, []);
 
   const choose = useCallback((choiceId: string) => {
-    // 年タイマーはリセットしない（アクション／決断のあと続きから）
     choiceElapsedRef.current = 0;
     choiceLastTickRef.current = null;
     choicePendingIdRef.current = null;
@@ -90,7 +92,6 @@ export function GameApp() {
   }, []);
 
   const togglePause = useCallback(() => {
-    // pause 切替時は経過を保持。次回tickで lastTick を更新するだけ
     yearLastTickRef.current = null;
     choiceLastTickRef.current = null;
     setState((s) => (s ? setPaused(s, !s.paused) : s));
@@ -134,7 +135,14 @@ export function GameApp() {
     setState(openPlayerActions(s));
   }, []);
 
-  // 年が変わったら年クロックだけリセット
+  const confirmReset = useCallback(() => {
+    if (
+      window.confirm("最初の画面に戻りますか？進行中のプレイは消えます。")
+    ) {
+      reroll();
+    }
+  }, [reroll]);
+
   useEffect(() => {
     if (!state || state.phase !== "playing") return;
     if (yearNumberRef.current === state.year) return;
@@ -144,7 +152,6 @@ export function GameApp() {
     setYearProgress(0);
   }, [state?.phase, state?.year]);
 
-  // 税のフローティング／劣化シェイク
   useEffect(() => {
     if (!state || state.phase !== "playing") return;
     if (state.timeline.length <= prevTimelineLen.current) {
@@ -166,7 +173,6 @@ export function GameApp() {
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [state?.phase, state?.timeline.length]);
 
-  // 1年タイマー——pause / pending / 速度変更でも経過を保持
   useEffect(() => {
     if (!state || state.phase !== "playing" || state.endingId) return;
 
@@ -177,7 +183,6 @@ export function GameApp() {
       const now = Date.now();
       const need = yearDurationMs(s.speed);
 
-      // 手動進行（なし）または一時停止中は自動で進めない
       if (s.paused || s.speed === 0 || !Number.isFinite(need)) {
         yearLastTickRef.current = null;
         if (s.speed !== 0 && Number.isFinite(need)) {
@@ -220,7 +225,6 @@ export function GameApp() {
     startThinkingGate();
   }, [startThinkingGate]);
 
-  // シンキング——イベント確認後にだけ進む。pause しても残りを保持
   useEffect(() => {
     if (!state || state.phase !== "playing" || !state.pending) return;
 
@@ -281,18 +285,36 @@ export function GameApp() {
   }, [state?.phase, state?.pending?.id, state?.pending?.timed, thinkingActive]);
 
   if (!state) {
+    if (isDesktop) {
+      return (
+        <main className="desktop-stage flex min-h-dvh items-center justify-center">
+          <p className="text-sm text-muted">初期条件を抽選中…</p>
+        </main>
+      );
+    }
     return (
-      <PhoneShell>
+      <AppShell desktop={false}>
         <div className="flex h-full items-center justify-center bg-[#f8f7f4] text-sm text-muted">
           初期条件を抽選中…
         </div>
-      </PhoneShell>
+      </AppShell>
     );
   }
 
   if (state.phase === "intro") {
+    if (isDesktop) {
+      return (
+        <DesktopIntroLayout
+          state={state}
+          onStart={begin}
+          onReroll={reroll}
+          onApplyCustom={applyCustom}
+          onHome={confirmReset}
+        />
+      );
+    }
     return (
-      <PhoneShell>
+      <AppShell desktop={false}>
         <div className="relative flex h-full flex-col">
           <WelcomeModal />
           <div className="min-h-0 flex-1 overflow-hidden">
@@ -305,20 +327,65 @@ export function GameApp() {
           </div>
           <SiteFooter showAd />
         </div>
-      </PhoneShell>
+      </AppShell>
     );
   }
 
   if (state.phase === "result") {
+    if (isDesktop) {
+      return (
+        <main className="desktop-stage desktop-ui flex h-dvh min-h-dvh flex-col text-[18px]">
+          <div className="mx-auto flex h-full w-full max-w-[1440px] flex-col px-5 lg:px-8">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-x-2 border-ink bg-white shadow-[6px_6px_0_0_rgba(15,23,42,0.08)]">
+              <DesktopHeader onHome={confirmReset} />
+              <div className="min-h-0 flex-1 overflow-y-auto">
+                <div className="mx-auto max-w-3xl">
+                  <ResultScreen
+                    state={state}
+                    onReplay={reroll}
+                    embedFooter={false}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="shrink-0 border-x-2 border-ink bg-white">
+              <SiteFooter showAd={false} desktop />
+            </div>
+          </div>
+        </main>
+      );
+    }
     return (
-      <PhoneShell>
+      <AppShell desktop={false}>
         <ResultScreen state={state} onReplay={reroll} />
-      </PhoneShell>
+      </AppShell>
+    );
+  }
+
+  if (isDesktop) {
+    return (
+      <DesktopPlayLayout
+        state={state}
+        yearProgress={yearProgress}
+        choiceRemain={choiceRemain}
+        choiceTotalMs={CHOICE_DURATION_MS}
+        taxFloat={taxFloat}
+        decayShake={decayShake}
+        thinkingActive={thinkingActive}
+        onSpeed={changeSpeed}
+        onTogglePause={togglePause}
+        onSkip={skipYear}
+        onReset={confirmReset}
+        onHome={confirmReset}
+        onAction={openActions}
+        onChoose={choose}
+        onStartThinking={startThinking}
+      />
     );
   }
 
   return (
-    <PhoneShell>
+    <AppShell desktop={false}>
       <div className="relative flex h-full flex-col bg-[#f8f7f4]">
         {taxFloat != null && (
           <div className="pointer-events-none absolute left-1/2 top-24 z-20 -translate-x-1/2">
@@ -337,15 +404,7 @@ export function GameApp() {
           onSpeed={changeSpeed}
           onTogglePause={togglePause}
           onSkip={skipYear}
-          onReset={() => {
-            if (
-              window.confirm(
-                "最初の画面に戻りますか？進行中のプレイは消えます。",
-              )
-            ) {
-              reroll();
-            }
-          }}
+          onReset={confirmReset}
         />
         <AdminFlowStrip
           vacantLevel={state.vacantLevel}
@@ -373,16 +432,23 @@ export function GameApp() {
             onStartThinking={startThinking}
           />
         )}
-        <SiteFooter />
+        <SiteFooter showAd />
       </div>
-    </PhoneShell>
+    </AppShell>
   );
 }
 
-function PhoneShell({ children }: { children: React.ReactNode }) {
+function AppShell({
+  children,
+  desktop: _desktop,
+}: {
+  children: React.ReactNode;
+  desktop: boolean;
+}) {
+  void _desktop;
   return (
-    <main className="flex min-h-dvh items-stretch justify-center bg-[#e2e8f0] md:items-center md:p-6">
-      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden border-2 border-ink bg-[#f8f7f4] shadow-[6px_6px_0_0_rgba(15,23,42,1)] md:h-[min(860px,92dvh)]">
+    <main className="flex min-h-dvh items-stretch justify-center bg-[#e2e8f0]">
+      <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden border-2 border-ink bg-[#f8f7f4] shadow-[6px_6px_0_0_rgba(15,23,42,1)]">
         {children}
       </div>
     </main>

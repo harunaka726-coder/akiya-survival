@@ -84,7 +84,7 @@ export function StartScreen({
                 : "bg-white text-ink-soft"
             }`}
           >
-            ガチャ
+            実家ガチャ
           </button>
           <button
             type="button"

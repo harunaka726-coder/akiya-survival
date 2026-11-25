@@ -372,6 +372,8 @@ function filterChoices(state: GameState, choices: PendingChoice[]): PendingChoic
       return false;
     }
     if (c.special === "demolish") {
+      // 親が存命（未相続）の家は勝手に解体できない
+      if (!state.flags.inherited) return false;
       if (state.flags.siblingDementia) return false;
       if (state.ownership === "shared" && !state.flags.siblingNegotiated) return false;
       // 見積もり後は常に表示。未見積でも資金がだいたい足りそうなら表示
@@ -382,6 +384,7 @@ function filterChoices(state: GameState, choices: PendingChoice[]): PendingChoic
       }
     }
     if (c.special === "estimate_demolish") {
+      if (!state.flags.inherited) return false;
       if (state.flags.demolished || state.flags.sold) return false;
     }
     return true;
@@ -416,18 +419,20 @@ export function openPlayerActions(state: GameState): GameState {
         label: "空家の様子を見に行く",
         special: "visit",
       });
-      if (!state.flags.demolishEstimated) {
-        choices.push({
-          id: "act_estimate_demolish",
-          label: "解体費用の見積もりをとる",
-          special: "estimate_demolish",
-        });
-      } else {
-        choices.push({
-          id: "act_demolish",
-          label: "解体して更地に",
-          special: "demolish",
-        });
+      if (state.flags.inherited) {
+        if (!state.flags.demolishEstimated) {
+          choices.push({
+            id: "act_estimate_demolish",
+            label: "解体費用の見積もりをとる",
+            special: "estimate_demolish",
+          });
+        } else {
+          choices.push({
+            id: "act_demolish",
+            label: "解体して更地に",
+            special: "demolish",
+          });
+        }
       }
       if (state.flags.inherited && !state.flags.belongingsCleared) {
         choices.push({
@@ -677,7 +682,7 @@ function yearlyDecision(state: GameState): PendingEvent {
     });
   }
 
-  if (!state.flags.demolished) {
+  if (!state.flags.demolished && state.flags.inherited) {
     choices.push({
       id: "estimate_demolish",
       label: "解体費用の見積もりをとる",
@@ -786,15 +791,29 @@ function checkForcedEndings(state: GameState): GameState | null {
     next.flags.demolishedAtYear = state.year;
     next.flags.adminExecuted = true;
     next.flags.ignoredOrder = true;
+    const execTitle = "行政代執行——建物は消えた。終わりではない";
+    const execBody =
+      "自治体が強制解体した。費用はいったん公費（血税）で立て替えられ、のちに所有者等へ請求される。破産していても他の兄弟・共有者へ徴収が向かうことがある。更地の固定資産税と雑草管理は、これから続く。";
+    const execLegal =
+      "行政代執行の費用は義務者負担。建物が消えても土地の管理・税・費用請求は残る。";
     next = pushEntry(next, {
-      title: "行政代執行——建物は消えた。終わりではない",
-      body: "自治体が強制解体した。費用はいったん公費（血税）で立て替えられ、のちに所有者等へ請求される。破産していても他の兄弟・共有者へ徴収が向かうことがある。更地の固定資産税と雑草管理は、これから続く。",
-      legalNote:
-        "行政代執行の費用は義務者負担。建物が消えても土地の管理・税・費用請求は残る。",
+      title: execTitle,
+      body: execBody,
+      legalNote: execLegal,
       tone: "danger",
       deltas: { savings: -350, stress: 20, decay: -100 },
     });
-    next.pending = yearlyDecision(next);
+    // タイムラインの代執行通知と揃えた pending（更地決断は確認後）
+    const landChoices = yearlyDecision(next).choices;
+    next.pending = {
+      id: "admin_execution_notice",
+      title: execTitle,
+      body: execBody,
+      legalNote: execLegal,
+      tone: "danger",
+      timed: true,
+      choices: landChoices,
+    };
     return next;
   }
   // 勧告・命令を長期間放置＋高劣化でも代執行コースへ
@@ -1769,6 +1788,14 @@ function resolveSpecial(state: GameState, special: PendingChoice["special"]): Re
       };
     }
     case "estimate_demolish": {
+      if (!state.flags.inherited) {
+        return {
+          title: "見積もりを頼めない——親が存命",
+          body: "解体の前提となる所有者の判断がまだ親側にある。生前相談の段階では、勝手に業者を入れられない。",
+          tone: "warn",
+          effect: { stress: 3 },
+        };
+      }
       let estimate = randInt(240, 380) + state.year * randInt(6, 14);
       if (state.tags.building === "seismic_old") estimate += randInt(20, 50);
       if (state.tags.location === "urban") estimate += randInt(30, 70);
@@ -1795,6 +1822,15 @@ function resolveSpecial(state: GameState, special: PendingChoice["special"]): Re
       };
     }
     case "demolish": {
+      if (!state.flags.inherited) {
+        return {
+          title: "解体できない——親が存命",
+          body: "名義はまだ親のもの。生前に子が勝手に解体することはできない。",
+          legalNote: "所有者の同意なく建物を解体すれば、民事・刑事上の問題になり得る。",
+          tone: "warn",
+          effect: { stress: 6 },
+        };
+      }
       if (state.flags.siblingDementia) {
         return {
           title: "解体できない——共有者の意思確認不能",
@@ -1918,7 +1954,7 @@ function resolveSpecial(state: GameState, special: PendingChoice["special"]): Re
           setFlags: { inheritanceWindowOpen: false, inheritanceMonthsLeft: 0 },
           ownership: "cleared",
         },
-        endingId: "tearful_exit",
+        endingId: "renounce",
       };
     }
     case "sibling": {

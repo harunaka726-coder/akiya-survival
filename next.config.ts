@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cloudflare Pages 向け静的書き出し
+  output: "export",
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
+  // export モードでは PPR / Cache Components と併用不可
   turbopack: {
     rules: {
       "*.css": {

@@ -85,13 +85,30 @@ export function HouseVisual({
   vacantLevel,
   mode = "standing",
   compact = false,
+  large = false,
+  stretch = false,
+  wide = false,
 }: {
   decay: number;
   vacantLevel: VacantLevel;
   mode?: HouseMode;
   compact?: boolean;
+  /** PCステータス用の大きめサイズ */
+  large?: boolean;
+  /** 親の高さに合わせて正方形に伸ばす（PCゲージ列と揃える） */
+  stretch?: boolean;
+  /** PC縦積み：横幅いっぱいの大きめ絵 */
+  wide?: boolean;
 }) {
-  const size = compact ? "h-[92px] w-[92px]" : "h-[128px] w-[128px]";
+  const size = wide
+    ? "aspect-square w-full max-w-[132px]"
+    : stretch
+      ? "aspect-square max-h-full min-h-[128px] max-w-[180px] shrink-0 self-stretch"
+      : large
+        ? "h-[148px] w-[148px]"
+        : compact
+          ? "h-[92px] w-[92px]"
+          : "h-[128px] w-[128px]";
   const isLot = mode === "demolished" || mode === "cleared";
 
   return (
@@ -105,7 +122,7 @@ export function HouseVisual({
             alt=""
             fill
             className="object-cover"
-            sizes="128px"
+            sizes={wide ? "132px" : stretch || large ? "180px" : "128px"}
             priority
           />
         )}
